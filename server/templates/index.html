@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ar">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Chat Page</title>
+	<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }} ">
+</head>
+
+<body>
+	<div class="chat-container">
+		<div class="chat-header">
+			<h1>Close Wiki</h1>
+		</div>
+		<div class="chat-messages">
+		</div>
+		<div class="chat-form-container">
+			<form id="chat-form">
+				<!-- textarea with a placeholder -->
+				<textarea id="msg" placeholder=""></textarea>
+				<button class="btn">Send</button>
+			</form>
+		</div>
+	</div>
+	<script>
+		const MESSAGE_TEMPLATE = `
+			<div class="message">
+				<p class="meta">{user}</p>
+				<p class="text">
+					{message}
+				</p>
+			</div>
+		`;
+
+		const form = document.getElementById('chat-form');
+		form.onsubmit = async (e) => {
+			e.preventDefault();
+			const msg = document.getElementById('msg').value;
+
+			// add message to DOM
+			const myNewMessage = MESSAGE_TEMPLATE.replace('{user}', 'You').replace('{message}', msg.replace("\n", "<br>"));
+			document.querySelector('.chat-messages').innerHTML += myNewMessage;
+
+			const data = await fetch('/ask', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					prompt: msg
+				})
+			}).then(res => res.json())
+
+			const responseMessage = data.response
+
+			// add message to DOM
+			const newMessage = MESSAGE_TEMPLATE.replace('{user}', 'Bot').replace('{message}', responseMessage.replace("\n", "<br>"));
+			document.querySelector('.chat-messages').innerHTML += newMessage;
+		}
+	</script>
+</body>
+
+</html>
